@@ -1,0 +1,16 @@
+--- SDL_mixer-1.2.12/dynamic_mod.h.orig	2025-07-11 15:29:26.529973841 +0000
++++ SDL_mixer-1.2.12/dynamic_mod.h	2025-07-11 15:30:35.075880552 +0000
+@@ -30,11 +30,11 @@
+ 	void (*MikMod_Exit)(void);
+ 	CHAR* (*MikMod_InfoDriver)(void);
+ 	CHAR* (*MikMod_InfoLoader)(void);
+-	BOOL (*MikMod_Init)(CHAR*);
++	BOOL (*MikMod_Init)(const CHAR*);
+ 	void (*MikMod_RegisterAllLoaders)(void);
+ 	void (*MikMod_RegisterDriver)(struct MDRIVER*);
+ 	int* MikMod_errno;
+-	char* (*MikMod_strerror)(int);
++	const char* (*MikMod_strerror)(int);
+ 	void (*MikMod_free)(void*);
+ 	BOOL (*Player_Active)(void);
+ 	void (*Player_Free)(MODULE*);
