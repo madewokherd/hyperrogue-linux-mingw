@@ -4,6 +4,8 @@ SDL2_COMPAT_VERSION = 2.32.56
 SDL12_COMPAT_VERSION = 1.2.68
 SDL_GFX_VERSION = 2.0.27
 MIKMOD_VERSION = 3.3.13
+LIBOGG_VERSION = 1.3.6
+LIBVORBIS_VERSION = 1.3.7
 SDL_MIXER_VERSION = 1.2.12
 ZLIB_VERSION = 1.3.1
 LIBPNG_VERSION = 1.6.50
@@ -134,6 +136,50 @@ $(CURDIR)/install/bin/libmikmod-3.dll: $(MIKMOD_SOURCE)/libmikmod/libmikmod-3.dl
 	+$(BUILDENV) $(MAKE) -C $(MIKMOD_SOURCE)/libmikmod install
 	touch $(CURDIR)/install/bin/libmikmod-3.dll
 
+# libogg
+LIBOGG_SOURCE_FILENAME = libogg-$(LIBOGG_VERSION).tar.xz
+LIBOGG_SOURCE_URL = https://github.com/xiph/ogg/releases/download/v$(LIBOGG_VERSION)/$(LIBOGG_SOURCE_FILENAME)
+LIBOGG_SOURCE = libogg-$(LIBOGG_VERSION)
+
+$(LIBOGG_SOURCE_FILENAME):
+	$(WGET) $(LIBOGG_SOURCE_URL)
+
+$(LIBOGG_SOURCE)/configure: $(LIBOGG_SOURCE_FILENAME)
+	$(TARX) $<
+	(cd $(LIBOGG_SOURCE) && autoreconf -if)
+
+$(LIBOGG_SOURCE)/Makefile: $(LIBOGG_SOURCE)/configure
+	cd $(LIBOGG_SOURCE) && $(BUILDENV) ./configure $(CONFIGUREFLAGS)
+
+$(LIBOGG_SOURCE)/src/.libs/libogg-0.dll: $(LIBOGG_SOURCE)/Makefile
+	+$(BUILDENV) $(MAKE) -C $(LIBOGG_SOURCE)
+
+$(CURDIR)/install/bin/libogg-0.dll: $(LIBOGG_SOURCE)/src/.libs/libogg-0.dll
+	+$(BUILDENV) $(MAKE) -C $(LIBOGG_SOURCE) install
+	touch $(CURDIR)/install/bin/libogg-0.dll
+
+# libvorbis
+LIBVORBIS_SOURCE_FILENAME = libvorbis-$(LIBVORBIS_VERSION).tar.xz
+LIBVORBIS_SOURCE_URL = https://github.com/xiph/vorbis/releases/download/v$(LIBVORBIS_VERSION)/$(LIBVORBIS_SOURCE_FILENAME)
+LIBVORBIS_SOURCE = libvorbis-$(LIBVORBIS_VERSION)
+
+$(LIBVORBIS_SOURCE_FILENAME):
+	$(WGET) $(LIBVORBIS_SOURCE_URL)
+
+$(LIBVORBIS_SOURCE)/configure: $(LIBVORBIS_SOURCE_FILENAME)
+	$(TARX) $<
+	(cd $(LIBVORBIS_SOURCE) && autoreconf -if)
+
+$(LIBVORBIS_SOURCE)/Makefile: $(LIBVORBIS_SOURCE)/configure $(LIBOGG_SOURCE)/src/.libs/libogg-0.dll
+	cd $(LIBVORBIS_SOURCE) && $(BUILDENV) ./configure $(CONFIGUREFLAGS)
+
+$(LIBVORBIS_SOURCE)/lib/.libs/libvorbis-0.dll: $(LIBVORBIS_SOURCE)/Makefile
+	+$(BUILDENV) $(MAKE) -C $(LIBVORBIS_SOURCE)
+
+$(CURDIR)/install/bin/libvorbis-0.dll: $(LIBVORBIS_SOURCE)/lib/.libs/libvorbis-0.dll
+	+$(BUILDENV) $(MAKE) -C $(LIBVORBIS_SOURCE) install
+	test -e $(CURDIR)/install/bin/libvorbis-0.dll && touch $(CURDIR)/install/bin/libvorbis-0.dll
+
 # SDL_mixer
 SDL_MIXER_SOURCE_FILENAME = SDL_mixer-$(SDL_MIXER_VERSION).tar.gz
 SDL_MIXER_SOURCE_URL = https://www.libsdl.org/projects/SDL_mixer/release/$(SDL_MIXER_SOURCE_FILENAME)
@@ -146,7 +192,7 @@ $(SDL_MIXER_SOURCE)/configure: $(SDL_MIXER_SOURCE_FILENAME) patches/sdl_mixer/*.
 	$(TARX) $<
 	(cd $(SDL_MIXER_SOURCE) && for i in ../patches/sdl_mixer/*.patch; do (patch -p1 < $$i || exit); done)
 
-$(SDL_MIXER_SOURCE)/Makefile: $(SDL_MIXER_SOURCE)/configure $(CURDIR)/install/bin/SDL.dll $(CURDIR)/install/bin/libmikmod-3.dll
+$(SDL_MIXER_SOURCE)/Makefile: $(SDL_MIXER_SOURCE)/configure $(CURDIR)/install/bin/SDL.dll $(CURDIR)/install/bin/libmikmod-3.dll $(CURDIR)/install/bin/libvorbis-0.dll
 	cd $(SDL_MIXER_SOURCE) && $(BUILDENV) ./configure $(CONFIGUREFLAGS) --with-sdl-prefix=$(CURDIR)/install
 
 $(SDL_MIXER_SOURCE)/build/.libs/SDL_mixer.dll: $(SDL_MIXER_SOURCE)/Makefile $(CURDIR)/install/bin/SDL.dll
