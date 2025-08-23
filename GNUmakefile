@@ -328,6 +328,7 @@ hyperrogue/hyperrogue.exe: hyperrogue/language-data.cpp hyperrogue/autohdr.h hyp
 	+$(BUILDENV) $(MAKE) -C hyperrogue OS=mingw TOOLCHAIN=mingw CXXFLAGS_EARLY="-DWINDOWS -mwindows -D_A_VOLID8 -I$(CURDIR)/install/include -I$(CURDIR)/install/include/SDL" CXX=$(MINGW_TRIPLET)-g++ HYPERROGUE_USE_GLEW=1 HYPERROGUE_USE_PNG=1
 
 files: hyperrogue/hyperrogue.exe
+	rm -rfv hyperrogue-build
 	mkdir -p hyperrogue-build
 	cp install/bin/* hyperrogue-build
 	for i in libgcc_s_seh-1.dll libwinpthread-1.dll libstdc++-6.dll; do cp /usr/$(MINGW_TRIPLET)/bin/$$i hyperrogue-build; done
